@@ -12,15 +12,16 @@ jobs:
       - checkout
       - go/mod-download
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .
+            - go
+            - project
   run-linter:
     docker:
       - image: cimg/go:1.16.4
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: install golangci-lint
           command: |
@@ -34,7 +35,7 @@ jobs:
       - image: cimg/go:1.16.4
     steps:
       - attach_workspace:
-          at: .
+          at: ~/
       - go/test:
           covermode: atomic
           failfast: true
@@ -43,11 +44,13 @@ jobs:
     machine:
       image: ubuntu-2004:202010-01
     steps:
-      - attach_workspace:
-          at: .
       - aws-ecr/build-and-push-image:
+          attach-workspace: true
+          checkout: false
           repo: $ECR_REPO
           tag: $CIRCLE_TAG
+          workspace-root: ~/
+          extra-build-args: -t twitter-lambda
 workflows:
   build:
     jobs:
